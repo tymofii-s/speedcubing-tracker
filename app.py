@@ -117,6 +117,19 @@ def cancel():
 
     save_data(data)
 
+@app.route('/is_user_exist', methods=['GET'])
+def is_user_exist():
+    with open(DATA_FILE, "r") as file:
+        data = json.load(file)
+    
+    return data
+
+@app.route('/login', methods=['GET'])
+def login():
+    with open(DATA_FILE, "r") as file:
+        data = json.load(file)
+    
+    return data
 
 if __name__ == "__main__":
     app.run(debug=True)

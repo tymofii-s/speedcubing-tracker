@@ -62,3 +62,8 @@ function cancel() {
     })
     .catch(error => console.error("Помилка:", error));
 }
+
+function show_user() {
+    document.getElementById("user").textContent = localStorage.getItem("username")
+}
+show_user()

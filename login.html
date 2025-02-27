@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log in</title>
+</head>
+<body>
+    <h1>Вітаємо знову</h1>
+    <p>Ім'я користувача</p>
+    <input id="name" type="text">
+    <p>Пароль</p>
+    <input id="pass" type="text">
+    <button onclick="is_user_exist()"></button>
+
+    <script>
+        function is_user_exist() {
+            let name = document.getElementById("name")
+
+            fetch("http://127.0.0.1:5000/is_user_exist")
+            .then(response => response.json())
+            .then(data => {
+                if (name in data["users"].keys) {
+                    login()
+                    alert("exist")
+                } else {
+                    alert("don`t see ;(")
+                }
+            })
+        }
+
+        function login() {
+            let name = document.getElementById("name").value
+            let pass = document.getElementById("pass").value
+
+            fetch("http://127.0.0.1:5000/login")
+            .then(response => response.json())
+            .then(data => {
+                if (pass === data["users"][name]) { // перевіряємо пароль за тим ім'ям
+                    localStorage.setItem("username", name)
+               }
+            })
+        }
+    </script>
+</body>
+</html>
