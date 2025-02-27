@@ -46,3 +46,18 @@ function createChart() {
     });
 }
 createChart()
+
+function cancel() {
+    let text = "Cancel"
+    fetch("http://127.0.0.1:5000/cancel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text })
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message);
+        updateStatus();
+    })
+    .catch(error => console.error("Помилка:", error));
+}

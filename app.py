@@ -53,7 +53,7 @@ def submit():
     if streak % 4 == 0:
         data["freezes"] += 1
 
-    data["last_entry"] = today
+    roll_datas(data)
     save_data(data)
 
     return jsonify({"message": "Дані збережено!", "streak": streak, "freezes": data["freezes"]})
@@ -62,6 +62,17 @@ def parse_exported(content):
     # Знайдемо всі часи збірки за допомогою регулярного виразу
     times = re.findall(r'\d+\.\d{2}', content)
     return sum(float(time) for time in times) / len(times)
+
+def roll_datas(data: dict, direction=""):
+    if direction == "back":
+        data["last_entry"] = data["previous_datas"][0]
+        data["previous_datas"][0] = data["previous_datas"][1]
+        data["previous_datas"][1] = ""
+    else:   # якщо аргументу нема то вперед, за замовчуванням
+        data["previous_datas"][1] = data["previous_datas"][0]
+        data["previous_datas"][0] = data["last_entry"]
+        data["last_entry"] = datetime.today().strftime("%Y-%m-%d")
+    save_data(data)
 
 @app.route("/status", methods=["GET"])
 def get_status():
@@ -86,7 +97,22 @@ def get_data():
     with open(DATA_FILE, "r") as file:
         data = json.load(file)
     
-    return jsonify([float(entry["value"]) for entry in data["attempts"]])
+    return jsonify([float(entry) for entry in data["attempts"]])
+
+@app.route("/cancel", methods=["POST"])
+def cancel():
+    data = load_data()
+
+    # віднімаємо 1 замороження якщо воно додавалось
+    if len(data["attempts"]) % 4 == 0:
+        data["freezes"] -= 1
+    # видаляємо останній елемент
+    data["attempts"].pop()
+    # повертаємо стару дату
+    roll_datas(data, "back")
+
+    save_data(data)
+
 
 if __name__ == "__main__":
     app.run(debug=True)
