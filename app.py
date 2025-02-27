@@ -3,6 +3,7 @@ from flask_cors import CORS  # Додаємо CORS
 import json
 import os
 from datetime import datetime, timedelta
+import re
 
 app = Flask(__name__)
 CORS(app)  # Дозволяємо CORS для всіх запитів
@@ -14,7 +15,7 @@ def load_data():
     if os.path.exists(DATA_FILE):
         with open(DATA_FILE, "r") as file:
             return json.load(file)
-    return {"entries": {}, "freezes": 0, "last_entry": None}  # Видалено "streak"
+    return {"attempts": [], "freezes": 0, "last_entry": None}  # Видалено "streak"
 
 # Функція для збереження даних
 def save_data(data):
@@ -27,14 +28,13 @@ def submit():
     today = datetime.today().strftime("%Y-%m-%d")
     
     # Якщо на сьогодні вже є запис – повертаємо помилку
-    if today in data["entries"]:
+    if today == data["last_entry"]:
         return jsonify({"message": "Сьогодні вже введені дані!"}), 400
 
     entry = request.json
-    data["entries"][today] = entry  # Зберігаємо запис
-    streak = len(data["entries"])  # Стрік рахується по довжині entries
+    data["attempts"].append(parse_exported(str(entry)))  # Зберігаємо запис
+    streak = len(data["attempts"])  # Стрік рахується по довжині attempts
     
-    reset_day = None
     if data["last_entry"]:
         last_date = datetime.strptime(data["last_entry"], "%Y-%m-%d")
         
@@ -42,7 +42,7 @@ def submit():
         
         if days_missed > data["freezes"] + 1:
             # Якщо минув день після останнього можливого дня – обнуляємо стрік і очищаємо записи
-            data["entries"] = {}
+            data["attempts"] = []
             streak = 1
             data["freezes"] = 0  
         else:
@@ -58,10 +58,15 @@ def submit():
 
     return jsonify({"message": "Дані збережено!", "streak": streak, "freezes": data["freezes"]})
 
+def parse_exported(content):
+    # Знайдемо всі часи збірки за допомогою регулярного виразу
+    times = re.findall(r'\d+\.\d{2}', content)
+    return sum(float(time) for time in times) / len(times)
+
 @app.route("/status", methods=["GET"])
 def get_status():
     data = load_data()
-    streak = len(data["entries"])  # Стрік рахується по довжині entries
+    streak = len(data["attempts"])  # Стрік рахується по довжині attempts
     
     reset_day = None
     if data["last_entry"]:
@@ -72,7 +77,7 @@ def get_status():
     return jsonify({
         "streak": streak,
         "freezes": data["freezes"],
-        "entries": data["entries"],
+        "attempts": data["attempts"],
         "reset_day": reset_day  # Показуємо дату reset day
     })
 
@@ -81,7 +86,7 @@ def get_data():
     with open(DATA_FILE, "r") as file:
         data = json.load(file)
     
-    return jsonify([float(entry["value"]) for entry in data["entries"].values()])
+    return jsonify([float(entry["value"]) for entry in data["attempts"]])
 
 if __name__ == "__main__":
     app.run(debug=True)

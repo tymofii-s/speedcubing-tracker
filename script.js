@@ -1,11 +1,10 @@
 function submitData() {
     let attempts = document.getElementById("attempts").value;
-    let value = document.getElementById("value").value;
 
-    fetch("https://speedcubing-duo.onrender.com/submit", {
+    fetch("http://127.0.0.1:5000/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ attempts, value })
+        body: JSON.stringify({ attempts })
     })
     .then(response => response.json())
     .then(data => {
@@ -16,7 +15,7 @@ function submitData() {
 }
 
 function updateStatus() {
-    fetch("https://speedcubing-duo.onrender.com/status")
+    fetch("http://127.0.0.1:5000/status")
     .then(response => response.json())
     .then(data => {
         document.getElementById("streak").textContent = data.streak;
@@ -28,7 +27,7 @@ updateStatus();
 
 
 function createChart() {
-    fetch("https://speedcubing-duo.onrender.com/get_chart_data")
+    fetch("http://127.0.0.1:5000/get_chart_data")
     .then(response => response.json())
     .then(data => {
         let ctx = document.getElementById("chart").getContext("2d");
