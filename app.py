@@ -61,7 +61,10 @@ def submit():
 def parse_exported(content):
     # Знайдемо всі часи збірки за допомогою регулярного виразу
     times = re.findall(r'\d+\.\d{2}', content)
-    return sum(float(time) for time in times) / len(times)
+    return round(
+        sum(float(time) for time in times) 
+        / len(times)
+        , 2)
 
 def roll_datas(data: dict, direction=""):
     if direction == "back":
@@ -84,12 +87,13 @@ def get_status():
         last_date = datetime.strptime(data["last_entry"], "%Y-%m-%d")
         last_possible_day = last_date + timedelta(days=data["freezes"])
         reset_day = (last_possible_day + timedelta(days=1)).strftime("%Y-%m-%d")
-    
+        lost_day = (last_possible_day + timedelta(days=2)).strftime("%Y-%m-%d")
+
     return jsonify({
         "streak": streak,
         "freezes": data["freezes"],
-        "attempts": data["attempts"],
-        "reset_day": reset_day  # Показуємо дату reset day
+        "reset_day": reset_day,  # Показуємо дату reset day
+        "lost_day": lost_day
     })
 
 @app.route('/get_chart_data', methods=['GET'])

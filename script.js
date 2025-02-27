@@ -1,3 +1,5 @@
+updateStatus()
+
 function submitData() {
     let attempts = document.getElementById("attempts").value;
 
@@ -20,11 +22,10 @@ function updateStatus() {
     .then(data => {
         document.getElementById("streak").textContent = data.streak;
         document.getElementById("freezes").textContent = data.freezes;
+        document.getElementById("warning").textContent = `Ваш стрік зіб'ється ${data.lost_day}. Останній день коли можна відновити свій відрізок ${data.reset_day}!`
     })
     .catch(error => console.error("Помилка:", error));
 }
-updateStatus();
-
 
 function createChart() {
     fetch("http://127.0.0.1:5000/get_chart_data")
